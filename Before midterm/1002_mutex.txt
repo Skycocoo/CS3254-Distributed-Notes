@@ -1,0 +1,140 @@
+atomic operation: indevisible
+
+spin lock
+mutex
+
+spin lock:
+    spinning till the lock is held (atomic operation)
+mutex:
+    operations related to scheduler
+    sleep the thread until the lock is available
+    but: context switch would be expensive (should compare with spinning time)
+
+    modern: try spinning, if long time, then mutex
+
+gcc special keyword for atomic instructions
+
+
+golang: resolve race condition:
+    type Counter struct {
+        V int
+        mut sync.Mutex
+    }
+
+    func (c *Counter) Inc() {
+        // resolve race condition
+        c.mut.Lock()
+        defer c.mut.Unlock() // use defer if can
+        c.V += 1;
+    }
+
+    func (c *Counter) Get() int {
+        // lock when read?
+        c.mut.Lock()
+        defer c.mut.Unlock()
+        return c
+
+    }
+
+    func main() {
+        myC := Counter{}
+        fmt.Println(myC.Get())
+        for i := 0; i < 1000; i++ {
+            go myC.Inc()
+        }
+        time.Sleep(time.Second)
+        fmt.Println(myC.Get())
+    }
+
+    // or: use atomic operation for int
+    import("sync/atomic")
+    type Counter struct {
+        V int64
+    }
+
+    func (c *Counter) Inc() {
+        // resolve race condition
+        atomic.AddInt64(&c.v, 1)
+    }
+
+    func (c *Counter) Get() int64 {
+        return atomic.LoadInt64(&c.v)
+    }
+
+    func main() {
+        myC := Counter{}
+        fmt.Println(myC.Get())
+        for i := 0; i < 1000; i++ {
+            go myC.Inc()
+        }
+        time.Sleep(time.Second)
+        fmt.Println(myC.Get())
+    }
+
+
+
+
+golang wait for threads end:
+    var wg sync.WaitGroup
+    for i:= 0; i < 1000; i++) {
+        wg.Add(1) // add 1 thread to be waited
+        go func() {
+            src := rad.Intn(len(acct))
+            dst := rad.Intn(len(acct))
+            if (src != dst){
+            fmt.Println("trander from %d to %d", src, dst)
+            // non-atomic transfer opeeration
+            transfer(&acct[src], &acct[dst])
+
+            // call done: finish thread
+            wg.Done()
+        }()
+    }
+
+    wg.Wait() // semaphore
+    // wait for all threads to end
+
+
+if just use lock for transfer: operations may not work concurrently
+granularity: how much data are we locking
+
+add mutex for Account struct:
+    if thread1: A -> B; thread2: B -> A at the same time:
+    both threads go sleep
+
+    => specify the order of acquiring the lock
+
+
+formal methods:
+    prove mathematically the correctness of software
+    e.g: haskell strongly typed language
+    e.g: coq: writing language: proof before compile
+
+
+dining philosopher:
+    threads could be
+        / starved (one thread waiting forever)
+        / live lock (releasing & acquiring at the same time)
+        / deadlock (threads waiting others forever)
+    => number the forks & acquire lower-numbered forks first
+
+
+
+proj: architecture => application
+    prob front-end want to cache some data
+    multiple front-end server (different kinds of front-end) => handle multiple application loads
+
+    vital: vnc connection
+        one server: nc -l 8080
+        other: nc (ip addr)
+
+        ip address (internal)
+
+        sftp user@ip (ssh file transfer protocol)
+
+
+
+
+
+
+smart deadlock detector that intelligently resolve the deadlock?

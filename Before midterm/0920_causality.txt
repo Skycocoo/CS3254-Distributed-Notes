@@ -1,0 +1,32 @@
+causality: message comes after another message
+
+total order:
+    e.g: integer (could be determined as ordered / not ordered)
+    -> total ordering of messages: any message could be ordered / not
+    -> not possible: cannot order two messages that are not related / no causality
+
+    except: message: central ordering by one single machine (no distributed)
+    (might other approaches)
+
+partial ordering: relationship between entities within the set
+    order does not necessarily apply to each of the element
+    (more flexible)
+    feature: (not guaranteed for every elem)
+        transitive (a ≤ b && b ≤ c -> a ≤ c)
+        anti-symmetric (a ≤ b && b ≤ a -> a = b)
+
+    happened before relationship "->":
+    a "->" b if both events happens on the same node and a occured prior to b
+                || a is the sending event of the message and b is the receipt event of that message
+    concurrent relationship:
+        if two events do not have "->" relationship
+
+    implementing partial order: designed by leslie lamport?
+        increment counter before every event (including sending messages)
+        receiverCounter = max(receiverCounter, incomingCounter);
+    => lamport clock (keep track of time)
+        if event a "->" event b, then timestamp(a) < timestamp(b)
+        but the converse is not true (i.e if timestamp(a) < timestamp(b), it is not true that event a "->" event b)
+
+        e.g: shopping cart: if two shopping cart send update of cart simutaneously
+            -> no idea to know that these are concurrent actions

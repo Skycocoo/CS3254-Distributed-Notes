@@ -1,0 +1,61 @@
+midterm:
+    no multiple choices
+
+    happened before:
+        1. same process: event 1 happens before event 2
+        2. diff process: P1 send message happens before P2 receive that message
+        3. transitive rule: if e1 -> e2 and e2 -> e3, then e1 -> e3
+    "concurrent": no happened before
+
+    lamport lock / vector clock
+        lamport lock:
+            each process has their own counter (doesnt guarantee the scale of the number)
+            increment local counter in send event
+            update local counter when receive other counter (choose the larger one)
+
+            doesnt guarantee happened before relationship if comparing timestamp
+
+        vector clock:
+            integer is total order; happened before is partial order
+            group membership (node exit / enter a group)
+
+            happened before: v1 -> v2 if all elements in v1 is ≤ those in v2
+
+
+    failure:
+        types:
+            fail-stop: crash (not responding to any messages)
+            fail-recover: lost some data (dependes on the application's state)
+                from fail-stop to fail-recover:
+                    application should only support fail-stop
+                    if fail-recover: it should be a "new" node
+            network partition: cannot reach to some nodes
+            arbitrary; Byzantine: hacking / not working correctly
+
+        detect:
+            ping-ack:  ping ->    acknowledge <- (on-demand)
+            heartbeat: ack with no ping          (on-going)
+
+        attribute:
+            accuracy: identify real failure
+                inaccurate: incorrectly determine a node is down but its working (false negative)
+            completeness: detect all failues
+                incomplete: incorrectly determine a node is working but its down (false positive)
+
+    file system:
+        unix system:
+            cursor (file pointer) should be managed
+        NFS:
+            specify offset for each operations
+            client side stores file pointer
+            (idempotent operations)
+        AFS:
+            store files locally, make local changes, and send the file back
+        dropbox:
+            local daemon
+            write locally, daemon takes care of the update
+
+        NFS: getattr: whether need to update local cached copy
+        AFS: testAuth: same thing => server notifies all the servers that request the file (statefullness of the server)
+
+    dining philosopher: order lock

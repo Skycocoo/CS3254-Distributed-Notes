@@ -1,0 +1,104 @@
+two sides: if time of sending messages is 5ms:
+	wait for every 5ms for acknowledgement / send again
+	if send streaming of sequential messages:
+		if wrong message: send back request
+	reduce # of messages
+
+	-> synchronous network
+
+
+deduplication: send sequential messages with order
+problem:
+	receive messages in different order
+	(TCP protocol) -> middleware takes care of trasmitting & retransmitting
+
+	A -> middleware -> B
+	A -> middleware: middleware receive message
+	middleware -> B: middleware deliver message
+	middleware: reordering & retransmitting & ...
+
+okay if lose message: live streaming / gaming / ... (some real time application)
+okay if message out of order: email (no guarantee for order)
+
+
+
+n nodes of sending messages:
+	if want every node receive messages in same order:
+		usual: chronologically (time stamp)
+		if network delay => number sequentially (how to order from differnet nodes)
+	send messages to one central hub (new) that number the messaegs from differnet nodes
+		problem: failure of central hub (node); no distributed system (converge into one)
+	choose one of the node to number the messages
+		problem: similar to central hub
+			if fail: should have backup of the same order
+	number server: response the number only (no messages sending through)
+		problem: slow
+
+
+
+no timestamp:
+	time between messages sent and received: no guarantee
+	chip for time (vibrating cyrstal to send current / frequency), but maybe skew of clock: noticable error;
+	NTP (network time protocol): adjust skew in internal time clock;
+	wallclock: time could go backward (leak seconds); no monotomic
+
+
+
+balance: trade off
+concensus: either of two nodes can send proposal -> need to agree on same proposal
+	CAP theorem: 1. concensus 2. consistent 3. option to change the date
+	CAP:
+		a distributed system can only choose 2 out of 3 of CAP (at most 2 out of 3)
+		Consistency (agree)
+	 	Availability (system working)
+	 	Partition tolerance (possibility that communication is not perfect / network might down) (partition: two network)
+		false binary choice (real world: work between AP and CP)
+	CP system:
+		if network: change time
+		if no network: cannot change time
+	AP system:
+		if no network: can change local time (no consistency)
+		if network: resolve conflict
+		e.g: Google Doc
+
+	in reality: in between CP and AP (tolerate some portion) (not absolute)
+
+
+DNS: domain name system (distributed database)
+	name alias -> ip address (appropriate system)
+	translate: map: too big data; before dns: stored in hosts locally matching domain to address
+	IPv6: new way of describing address (internet protocol version 6)
+	how to get address:
+		if cahced: -
+		if not: consult address of DNS server (from nearest network)
+		break down domain names:
+			domain name -> edu -> (.) root server -> com
+			along the path: should cache
+
+
+		```
+		$ host google.com
+		$ dig engineering.nyu.com ANY
+		```
+		TTL: time to live (for any server to cache the data: how long should keep this data; unit second)
+			come from name server when request
+			each record: unique TTL
+			set by the origin of server
+		IN: internet record
+		A: IP address
+		AAAA: IPv6
+		NS: name server
+
+	low TTL: update every time;
+		pro: consistency
+		con: slow
+	high TTL:
+		pro: fast
+		con: might not get the correct address
+	DNS: mix of AP & CP (consider trade offs consistently)
+
+
+
+
+
+"you cant win distributed system"

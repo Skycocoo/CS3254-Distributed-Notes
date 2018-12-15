@@ -1,0 +1,71 @@
+channel: one of the few built-in go that can be parameterized
+like queue but only hold 1 value (first in - first out)
+    c = make(chan int)
+    c <- 3 // push data into channel; (if there is value inside: wait till there''s no value)
+    q = <- c // read & pop data out of channel; (if there is not value inside: wait till there's one value)
+
+func fib(c chan int) {
+    /* */
+    c <- result
+}
+
+func main() {
+    c := make(chan int)
+    go fib(c)
+    val := <- c
+    fmt.Println("done")
+}
+
+// select: switch for channel
+// select one of the cases that will proceed
+select {
+case val := <- c:
+    fmt.Println("done")
+default:
+    spin()
+}
+
+waitgroup: easy to be implemented with channels
+channel: 2 types:
+    1: only one value inside channel
+    2: make(chann int, 3): have 3 values inside channel (buffering)
+
+capacity: 1
+put - got - put - got
+messed up version: put - put - got - got (between read and print)
+messed up version2: put - got - got - put (between put and print)
+
+capacity: 2
+messed up version: put - put - (get but not printed) put  - get - put - (get but not printed) put
+
+// function returns channel that is read-only
+func fib() <-chan int {
+    mychan := make(chan int)
+    a, b := 0, 1
+    go func() {
+        for {
+            mychan <- a
+            a, b = b, a+b
+        }
+    }()
+    return mychan
+}
+
+func main() {
+    fibchan := fib
+    for i := 0; i < 10; i++ {
+        // channel only do something if prev value is read
+        // lazy evaluation:
+        // delays the evaluation of an expression until its value is needed
+        fmt.Println(<-fibchan)
+    }
+}
+
+
+factory:
+phase3: writing 2 channels: phase3chann & phase2chann (if phase2chann full: phase3 never ends)
+avoid: dont allow thread to write the channel its reading from
+
+
+
+matrix sum:

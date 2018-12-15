@@ -1,0 +1,62 @@
+cache of dns: left on the query side
+time on different devices might asynchonous
+    different device: slice different of time going (time drift)
+    difference of time: (time skew)
+    not going forward: (non-monotonic)
+
+    basic usage of time: ordering messages (etc ...)
+
+types of distributed system:
+    centrailized architecture (center: core computer connected with other computers)
+    p2p architecture (peer to peer)(redundent server provide service for various clients)
+
+resolve time conflict: crystal has time drift -> synchronize time to correct
+    NTP: network time protocol
+    time source: keeps track of correct time (physical mongotonic time) (Caesium 133)
+    need to know transmission span
+        suppose time travel back and forth takes the same time
+
+    Cristian''s algo: clock synchronization
+        round trip time / 2 + correct time sent by time source
+        might be inaccurate: network connection asymmetric; time span is not accurate (time drift)
+
+    medium server polling correct time (like caches of time)
+    -> time servers instead of talking directly to Caesium clock
+    Berkeley''s algo:
+        pick one of those servers (electing leaders)
+        ask for collection of time from other time servers (not the same: time drifts)
+        average the collection of time (average off time drifts)
+        syncing from master server to other servers
+            could be Cristian''s algo
+            better:
+                wait from others'' response: timeout / record all differences -> assume drift is pretty small for a short amount of time
+                calculate skew: other servers send time to master server
+                then the master server sends back the skew of the time
+                
+        if malicious time server: only use controlled computers
+        solution: peer to peer approach? bit torrents / bit coins
+
+
+
+ordering messages from other endpoints
+    boardcast shopping carts to the other nodes (for say there are A, B, and C nodes)
+        A updates cart, B updates car differently, but C doesnt know which one is current one
+        -> causality: ordering should reflect causality -> some change is caused by some other (ordering)
+    principle:
+        any message A caused by message B mush be delivered after B
+        any message sent by server A after message n is delivered on server A, is caused by message n
+    if not dependent: ordering doesnt matter
+
+
+
+
+
+
+
+
+
+
+
+
+rpc: remote procedure call
+leap year: a second runs two second (smear) -> ensure monotonic (google)

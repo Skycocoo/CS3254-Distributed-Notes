@@ -1,0 +1,102 @@
+RPC: remote procedual call
+one computer ask another computer to run function call
+two computers do not have same memory space
+
+node: computer / system program
+request: send function identifier & parameters
+response: return val
+
+open socket, endpoint (name : port)
+convert request & response to byte string:
+    serialization / marshaling (arbitrary data -> byte string)
+    e.g: want to call func foo(int, string) bool:
+        send request of byte string; have length of byte for each field (name of func, parameters ...)
+        3foo4_ _ _ _ n _ _ _ _ _ _
+        might need to signal EOF to separate different requests / number of bytes in total / number of parameters
+
+// a function takes in node
+// serializing:
+// the other computer cannot know the next node if just send the pointer (no shared memory)
+type Node struct {
+    Name string
+    Next *Node
+}
+
+// binary tree
+// serializing: assume traverse tree in some order (pre-order / post-order)
+func serialize(t Tree) []byte {
+    serialize_string(t.Name)
+    if t.Left {
+        serialize(t.Left)
+    } else {
+        serialize_int(0)
+    }
+    if t.Right {
+        serialize(t.Right)
+    } else {
+        serialize_int(0)
+    }
+}
+
+func deserialize([]byte) (Tree) {
+    // do so in same order
+}
+
+type Tree struct {
+    Name string
+    Left *Tree
+    Right *Tree
+}
+
+
+// might have circular reference
+// should have some hash table, each pointer now becomes some reference in map
+func serialize(p Person) []byte {
+
+}
+
+type Person struct {
+    Name string
+    Friends []*Person
+}
+
+
+python: json:
+would detech circular reference
+    e.g: a = []
+         a.append[a]
+go:
+encoding/json  encoding/xml encoding/gob
+cannot handle circular referencing
+
+
+// serializing: should change the original value of x
+// could return two things (one modified value of x, one return value)
+// or have data on the other side (without serializing) => consensus of synchronization
+func foo(x *int) int {
+    *x += 1
+    return (*x) * 2
+}
+
+
+if need to send entire function: machine language of that func
+concern: sercurity (of sending code), memory (send cache), machine code compatibility, if func inside func
+=> erlang: allow sending func (but not preferred), run virtual environment
+
+
+synchronous RPC
+asynchronous RPC (B signal A when request finishes; A do other stuff)
+
+
+project:
+data not persistent (global array; dissapear next time)
+data in server
+
+
+tcp:
+sequence of instructions, if missing, request the missing stuff
+at least one (semantics) copy of instructions (send instructions until acknolwdge)
+at most one (semantics) copy (send only one instruction)
+
+
+fmt.Fprintf(conn. text): conn.write

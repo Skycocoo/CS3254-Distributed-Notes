@@ -1,0 +1,48 @@
+midterm:
+    thread: heavy thread / light-weight thread
+    mutex / spin lock / semaphore: for race conditions
+    CAP therom: partial ordering
+    DNS
+    clock: lamport clock (algo, pro & con, details), vector clock
+    clock synchronization (NTP): cristian, berkley
+    file system: pro & con, features (NFS, AFS, dropbox)
+    failure: types, detection
+    transaction (no 2-phase / 3-phase)?
+    RPC remote procedure call: marshaling
+
+
+    descripbe protocol / definitions
+    code: find error in this program / filling blanks
+
+---------
+
+replicate
+    reason: no single-point failure (data, network partition, load balancing)
+    interface: simple
+        problem: replica synchronization (last write wins in multiprocessing)
+        however: operations depend on the transimission speed / actual operation time to the data center
+
+    linearizability of data storage:
+        guarantee last write win for multiple replilcas / behave like one process
+        relaxed guarantee when overlap ("could" have ordering thats lineariable): race condition: some flexibility (effective point)
+
+        implementation:
+            mutex for data storage (read should after all writes (sync all replicas)?)
+            block when write
+            pro: 
+            con: slow, no concurrency
+
+
+
+
+
+
+
+
+
+
+
+
+
+synchronous network (upper bound of operation time)
+our network: asynchrounous

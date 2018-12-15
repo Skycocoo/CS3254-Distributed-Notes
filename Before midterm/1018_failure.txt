@@ -1,0 +1,81 @@
+how to resolve failure when there are n nodes:
+    network bandwidth
+    heartbeat
+    all-to-all: O(n^2) requests
+    centrailized: single-point failure
+    ring: one node communicate to its next node
+
+    all-to-all:
+        what if network partition is partial (some nodes can reach some other cannot) => dissagreement on the network status / node status => concensus issue
+    => authority to one node
+
+transaction:
+    ACID: correct trasaction
+        atomic: should be atomic operation
+        correct: should validate operation
+        isolation: same result as if one transaction running at a time
+        durable: data stays
+    (textbook: C: consistency -> correctness of data)
+    (CAP: C: two nodes agree on same message)
+
+    => lock: ACID; slow
+
+    if lock entire database: still having different result from two transactions
+    need serial equivalence
+
+    serial equivalence:
+        combined commands from ≥ 2 transactions have same effect as if those are performed sequentially
+        conflict:
+            some order that does not ensure serial equivalence
+            read after write, write after write
+        => if all pairs of conflicing operations are in the same order in all combinations
+
+        T1:
+            balance := b.getBalance()
+            b.setBalance(balance * 1.1)
+            a.withdraw(balance * 0.1)
+        T2:
+            balance := b.getBalance()
+            b.setBalance(balance * 1.1)
+            c.withdraw(balance * 0.1)
+        => should change the order of a and c (since balance from read, still a conflict if its after write)
+
+
+    multioke servers to do transactions
+        a -> client -> b
+        fail transaction between a and client: x atomic / x correct
+        fali client: deposit lost
+
+        should consider data fail / coordinator (client) fail
+
+        begin transaction
+            a.withdraw(4) // if fail: cancle entire transaction
+            b.deposit(1)
+        commit
+
+        should check availablity for each transactions
+
+    => 2-phase commit (2pc)
+        coordinator (client) - check each availability of each nodes (transactions / cohorts)
+        if all available: commit every transactions
+        else: abort
+        (could avoid conflict between nodes)
+
+        if coordinator crash in the middle of sending commits?
+            ask other nodes (if any get commit => commit) / wait
+        if message lost?
+            ask client
+        if client fails and the one commited fails?
+            no actual solution? => indeterminant state)
+
+        not live => wait forever for commit signal if network partition
+
+    => 3 phases commit (3pc)
+        check commit (votes) -> pre commit -> commit
+
+        coordinator         -   cohorts
+        votes                   uncertain (abort)
+        pre commit (abort)      prepare commit (commit)?
+        commit (abort)          commit
+
+        if network partition? => auto commit

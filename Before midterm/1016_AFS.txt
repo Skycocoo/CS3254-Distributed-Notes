@@ -1,0 +1,84 @@
+problem of NFS:
+    loss: request lost / server down / reply lost on the way back from server
+
+lock in file system:
+    assume access will first acquire the lock
+    safety issue to coordinate operations on the same file
+
+    lockf() linux syscall; called by process to lock file
+    if fail: return error
+    vfs: arrange lock for files
+
+    NFS:
+        acquire lock:
+            problem: client acquire lock but crash / server restarts
+            solve:
+                timeout? (application does not handle timeout for local file system)
+                frequently ask for locking (lots of network connections)
+
+                1> client detect server fail: assume lock released
+                2> server detect client fail: release all locks held by client (what if client resumes immediately)
+                3> avoid: => block lock operation
+
+    if delete file when writing:
+        windows: prevent deletion
+        unix: could modify, but all modifications are ended after close (as long as the file descriptor is held)
+        NFS: when detect: create new file with garbage name (record the writes after deletion)
+            might keep creating new files that takes space (need to delete by hand)
+
+            map NFS home directory => local computer (diskless work station)
+
+    dropbox:
+        folder: real local folder (normal vfs)
+        when open: sync right away
+        when modify: separate app (dropbox daemon): if change upload
+        if conflict: either warn or create copy
+
+
+    AndrewFS (AFS):
+        give up statelessness
+        TestAuth; GetFileStat, Fetch (read), Store (write), SetFileStat, ListDir
+
+        fetch: copies entire file to local (local vfs keep file pointer locally)
+        all writes are performed locally
+        close: asynchronous (call immediately)
+
+        what if keep local copy? modified or not?
+            => TestAuth: whether a file has changed since last fetch
+                NFS: getAttr
+            => too many requests of TestAuth
+
+            => network callback (could use states)
+                server stores states (remember which client has copy)
+                notify when file updated (need to clear local cache) => no clear on writing file
+                    if client down: flush cache by client
+
+    NFS vs AndrewFS:
+        AFS: slower when file size large
+        NFS: cache in-memory only (if read large file: slower )
+
+
+failure:
+    e.g:
+        system abnormal: delibertaely no responding
+        problem between connection (even if two nodes are working)
+            => network partition
+        out of memory => reboot (stop working for a short period of time)
+
+    types:
+        fail-stop (catastropic fail; stop responding instead of return garbage data)
+        fail-recover (recover to some state)
+        network partition (nework connection down)
+        arbitrary failure (Byzantine failure)
+
+    detection:
+        completeness
+        accuracy
+
+        if wait for long time: affect completeness
+            (wait for 10 mins, if node goes down 5 mins, then need 10 mins to know its down)
+        if wait for short time: affect accuracy
+            (delay in network: dead but actually not dead)
+
+        ping-ack approach: send pings wait for acknowldgement within time period
+        heartbeat approach: nodes agree on communicating per time period

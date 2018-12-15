@@ -1,0 +1,109 @@
+file systems
+    file: sequence of bytes
+    metadata:
+        name and suffix
+        owner (group)
+        timestamp (last access)
+        permission to access (read write execute)
+
+regular file system:
+    file stored on disk (physical medium to manipulate data)
+    ↓
+    driver (talk to disk & grab data)
+    ↓
+    file system interface (vfs Virtual File System in linux): command driver to put data on the disk
+    ↓
+    kernel (from system call)
+    ↓
+    standard libraries to do system call manipulating the files
+    ↓
+    application
+
+
+    linux syscall (between stdlib and kernel):
+    sys call: open is in section 2
+    int open(const char* filename): return file descriptor (open could be failed)
+    int close(int file descriptor)
+
+
+    between kernel and file system interface (vfs):
+    format disk: vfs: map filename to contents (physical positions)
+        make sure that the physical representation of files are consistent
+        FAT32: mostly for all systems
+            FAT: file allocation table
+            FAT12: floppy disk;
+            FAT32: more limits to describe files
+                easy to understand for all systems
+        NTFS: windows (windows NT)
+        EXT4: linus
+        APFS: mac (previous: HFST)
+
+
+
+distributed file system:
+    disk
+    ↓
+    server
+    ↓
+    network
+    ↓
+    file system interface (vfs in linux)
+    ↓
+    kernel
+    ↓
+    stdlib
+    ↓
+    application
+
+    problems: network failure / data racing / speed / state
+
+    advantage to stick to unix file system operations for distributed file system:
+        same interface: application could still work for both file systems
+
+    common unix file system:
+        lseek(file descriptor, offset):
+            change current file cursor / file pointer (stored in vfs layer; belongs to particular process)
+            offset: offset from the start of the file
+        vfs: store file cursor, buffering (first store some contents of data, and then write all at once)
+
+    client <-> server:
+        if retry write twice without acknowledging the first write from the server: file changes unexpected
+        => idempotent (operations have same effect independent of number of execution)
+        => current read / write / .. is not idempotent (will modify file pointer)
+        => keep track of file descriptor for local machine ...
+        => NFS (network file system)
+
+NFS network file system:
+    stateless: could retry harmlessly
+
+    file: mix of local and remote file system
+        mount: map file to other storage device
+
+    client: application, client module (e.g vfs current module translate sys call to file system)
+    server: directory service, flat file service, disk
+
+    translate from stateful system call to stateless NFS commands
+
+    stateful: open (create file cursor, get file descriptor ...)
+    stateless: UFID lookup (directory, filename)
+        directory service:
+        map each file to unique file identifier (UFID file handle): in case file name changed / file path too long
+            instead of file descriptor (which is only related to file open)
+
+    stateless: data, attribute read(UFID, offset, count, data) // need to keep track of offset in client vfs side
+
+
+    attributes: permission, size, type, ...
+
+
+    handle network error: nfs should retry (since network error shouldnt be handled by application, as it assumes the file is local)
+
+
+
+caching: id -> file name
+    buffer writes on client side, and then flush all changes once the file closes
+    what if server shuts down when close: cannot cached writes (close syscall return error)
+    but never checked close error: try close forever (& cannot kill close syscall)
+
+    cache write & read: delay in writing and reading => cannot know whether file is updated or not
+    => getattr: when was the last update of the file (might be called lots of times)

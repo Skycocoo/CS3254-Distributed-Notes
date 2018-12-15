@@ -1,0 +1,52 @@
+// fib(42)
+// & display spinning
+
+package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func fib(x int) int {
+    if x < 2 {
+        return x
+    }
+    return fib(x-2) + fib(x-1)
+}
+
+// or:
+// func printThing(delay time.Duration) {
+//     for _, r := range `-\|/` {
+//         fmt.Printf("\r%c", r)
+//         time.Sleep(delay)
+//     }
+// }
+
+func printThing() {
+    for {
+        spin := []string{"|", "/", "-", "\\", "-"}
+        for i := 0; i < len(spin); i++ {
+            fmt.Print("\r" + spin[i])
+            time.Sleep(5*time.Millisecond)
+        }
+        // fmt.Print("\r|")
+        // time.Sleep(5 * time.Millisecond)
+        // fmt.Print("\r/")
+        // time.Sleep(5 * time.Millisecond)
+        // fmt.Print("\r-")
+        // time.Sleep(5 * time.Millisecond)
+        // fmt.Print("\r\\")
+        // time.Sleep(5 * time.Millisecond)
+        // fmt.Print("\r-")
+        // time.Sleep(5 * time.Millisecond)
+    }
+}
+
+func main() {
+    go printThing()
+    // call fib in main thread: doesnt have to wait for fib to end
+    fmt.Print("\r%d\n", fib(42))
+
+    // time.Sleep(10 * time.Second)
+}

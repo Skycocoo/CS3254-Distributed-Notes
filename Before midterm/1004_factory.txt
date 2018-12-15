@@ -1,0 +1,100 @@
+package main
+
+import (
+    "fmt"
+    "time"
+    "math/rand"
+)
+
+type Lawnmower struct {
+    name string
+    serialnumber int
+    wheels []*Wheel
+    engine *Engine
+}
+
+type Engine struct {
+    name string
+}
+
+type Wheel struct {
+    diameter int
+}
+
+func phase1(phase1queue chan Lawnmower) {
+    count:=0
+    for {
+        time.Sleep((time.Duration(rand.Intn(500))) * time.Millisecond)
+        phase1queue <- Lawnmower{name:"TurboLawnPro", serialnumber:count}
+        fmt.Println("Put a lawnmower on the assembly line, id",count)
+        count ++
+    }
+}
+
+func phase2(station int, phase1queue chan Lawnmower, phase2queue chan Lawnmower) {
+    for {
+        lm := <-phase1queue
+        time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
+        lm.engine = &Engine{name:"BladeMaster v8"}
+        fmt.Println("Installed engine in lawnmower id",lm.serialnumber,"at engine station",station)
+        phase2queue <- lm
+    }
+}
+
+func phase3(station int, phase2queue chan Lawnmower, phase3queue chan Lawnmower) {
+    for {
+        lm := <-phase2queue
+        //Change this knob to cause deadlock
+        time.Sleep(time.Duration(rand.Intn(1)) * time.Second)
+        lm.wheels = append(lm.wheels, &Wheel{diameter:30})
+        fmt.Println("Added wheel", len(lm.wheels),"to lawnmower",lm.serialnumber,"at wheel station",station)
+        if len(lm.wheels) == 4 {
+            phase3queue <- lm
+        } else {
+            insertloop:for {
+                select {
+                    case phase2queue <- lm:
+                        break insertloop
+                    default:
+                        fmt.Println("phase2queue full!")
+                }
+            }
+        }
+    }
+}
+
+func phase4(phase3queue chan Lawnmower) {
+    for {
+        lm:=<-phase3queue
+        if lm.engine==nil {
+            fmt.Println("got a lawnmower without an engine!")
+        } else {
+            fmt.Println("Got a", lm.name,"with",len(lm.wheels),"wheels, id",lm.serialnumber)
+        }
+    }
+}
+
+func main() {
+    phase1queue := make(chan Lawnmower, 5)
+    phase2queue := make(chan Lawnmower, 5)
+    phase3queue := make(chan Lawnmower, 5)
+    go phase1(phase1queue)
+
+    go phase2(0, phase1queue, phase2queue)
+    go phase2(1, phase1queue, phase2queue)
+
+    go phase3(0, phase2queue, phase3queue)
+    go phase3(1, phase2queue, phase3queue)
+    go phase3(2, phase2queue, phase3queue)
+
+    go phase4(phase3queue)
+    for{}
+}
+
+
+/*
+Knobs to play with:
+    delay, especially in phase3 (wheel station)
+    queue depth, especially phase2queue
+    number of processes
+*/

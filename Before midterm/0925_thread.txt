@@ -1,0 +1,110 @@
+instead of lamper clock (which cannot tell the status of network connection):
+vector clock:
+	counter => {num1, num2, num3}:
+		each number corresponds to each node, that is the highest number of messages recognized by that node
+		update: element-wise max
+		compare: timestamp A dominates than timestamp B, only if ai ≥ bi for all i
+			can differentiate the converse relationship than lamport clock => concurrent
+
+		performance: caching: only send the part that have been changed
+
+	difference from lamport clock:
+		recognize concurrent event if neither was dominates (not clear with lamport clock)
+
+
+
+
+process in computer: ```$ps aux```
+	```xxd ls|more```
+	running process: e.g: ```ls```
+
+	restore stage for switching process (multiple programs)
+		(intel)
+		ss:esp: stack pointer
+		cs:eip: instruction pointer
+		all registeres...
+
+		virtual memory: global descriptor table; local descriptor table;
+
+
+process and thread in python
+	heavy-weight threads / OS threads / native threads (cannot have too many)
+		join: wait for the process to end
+		processes: represent file handles (file descriptor; if multiple process print under the same file handle: shouldnt)
+		whether the program allows modification global value from multiple processes
+
+		=> every process has individual global values
+		when spawn subprocess: new virtual memory space
+			each sub process: no shared memory ...
+
+		thread: shared memory; unpromised ordering
+		(different from process: doesnt change the virtual address pace)
+		(=> require many resource for each thread)
+
+	in contrast:
+	light-weight threads / green threads (controlled by single program)
+		pro: total contol over application (no OS interfered)
+		con: not easy to write
+
+		java: choose between os threads and green threads
+		python: os threads
+		go: green threads
+
+
+atomic instruction: no intervened by other process
+threads: partial ordering between two programs
+
+
+
+
+/*
+// global interpretor in python: serialized (threading)
+
+// processes
+import multiprocessing, time, sys
+glob_val = []
+
+def entry(num):
+	for _ in range(10):
+		glob_val.append(num)
+		print("hello from process %s, globval: %s" % (1: num, 2: glob_val))
+		time.sleep(1)
+
+def blocking_fd(fd):
+	import fcntl, os
+	fcntl.fcntl(fd, fcntl.F_SETFL, fcntl.fcntl(fd, fcntl.F_GETFL) & ---)
+
+blocking_fd(sys.stdout)
+process = []
+for num in range(5):
+	subproc = multiprocessing.Process(target=entry, arg=[num])
+	process.append(subproc)
+for s in process:
+	s.start()
+for s in process:
+	s.join()
+
+
+
+
+// threads
+
+import threading, time, sys
+glob_val = []
+
+def entry(num):
+	for _ in range(10):
+		glob_val.append(num)
+		print("hello from process %s, globval: %s" % (1: num, 2: glob_val))
+		time.sleep(1)
+
+process = []
+for num in range(5):
+	subproc = threading.Thread(target=entry, arg=[num])
+	process.append(subproc)
+for s in process:
+	s.start()
+for s in process:
+	s.join()
+
+*/

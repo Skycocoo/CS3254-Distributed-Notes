@@ -1,0 +1,99 @@
+package main
+
+// should not have imported packages not used
+import (
+    "fmt"
+)
+
+type Person struct {
+    Name string
+    Age int
+}
+
+// redefine type
+type Color int
+const (
+    // https://github.com/golang/go/wiki/Iota
+    // automatically propagate
+    Red Color = iota
+    Green
+    Blue
+)
+
+// define method outside of {}
+// pass reference (pointer) to the method is called on
+func (p *Person) IsTooOld() bool {
+    // .: works both instance & pointer
+    return p.Age > 60
+}
+
+
+func main() {
+    // length by bytes
+    // each character: different byte
+    mystr := "člověk"
+    // default: string consisted of array of bytes
+    // need to convert to array of chars to get the correct length
+
+    fmt.Println(len(mystr)) // 8 instead of 6
+    fmt.Println([]byte(mystr)) // of length 8
+    // rune: char
+    fmt.Println([]rune(mystr)) // of length 6
+
+
+    jeff := Person{ Name: "Jeff", Age: 19 }
+    fmt.Println(jeff)
+    fmt.Println("Is jeff old?", jeff.IsTooOld())
+
+
+    // {}: initiate map
+    personMap := map[string]Person{}
+    personMap["Jeff"] = jeff
+    personMap["Jane"] = Person{ Name: "Jane", Age: 20 }
+    // lookup
+    // should check ok for existence of a key
+    // if not existed: val is the empty instance
+    val, ok := personMap["Hi"]
+    fmt.Println("Is Hi there?", ok, val)
+    fmt.Println(personMap)
+}
+
+
+turing machine: basis of computer
+memory: tape
+cpu: process instructions of tape
+sequential processing
+
+distributed computers: sync data through sockets
+	tcp (transmission control protocol): 
+		ensure data receive in order
+		guarantee that data packet would not be lost
+	udp (user datagram protocol): 
+		discrete data sometimes not received full (not matter)
+		send datagrams without ensuring that the other side received data 
+		usually for online gaming
+		without overhead of back-and-forth communication: quicker than tcp
+	
+	endpoint of computer: address, port (specific program)
+	port: 22: ssh; 80: http; 443: ssl; 21: ftp; 23: telnet; 53: dns (domain name server)
+	
+	
+	bash:
+	telnet www.ibm.com 80  // connect web with http
+	GET / HTTP/1.1 // neet to get https (443) instead of http (80)
+	
+	telnet www.ibm.com 443
+	should use openssl to deal with ssl authentication
+	
+	
+	
+	server:
+	tcp: two-way pipe
+	scanner: receive data
+	conn.Write: deliver data
+	client:
+	send texts & receive response
+	
+	server: two for loops: loop to accept connection; once accepted: loop to service the connection
+	
+	remote procedure call (RPC)

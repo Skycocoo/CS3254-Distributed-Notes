@@ -1,0 +1,147 @@
+can a thread call fork (copy and create new process):
+    copy of a process with threads (fork a multi-thread)
+    (undeterministic status of threads: should stop all threads & copy & restore all states)
+        but if a thread is in the middle of system call (different context)
+    -> create a copy of main thread (only one thread being copied) -> the thread that calls fork
+    err: if a thread is updating some data (then those data are inconsistent) / the main thread try to interact with disappearing threads
+
+threads:
+    OS thread:
+        scheduler: same scheduler for both threads and processes
+        unix: task: include all threads and processes
+    green thread:
+        scheduled by application runtime instead of OS
+        disadvantage over OS thread:
+            scheduler of green thread: cannot interrupt system call
+            the thread with system call: preempted
+
+            all threads: running single OS task -> single OS processor
+
+            multiple system call with green thread?
+            => golang: allocate one more OS process to adapt all other green threads except the thread making system call (multiple OS processes depend on the number of system calls)
+
+    go: their own scheduler
+        instead of thread: goroutine (green thread)
+
+import (
+    "fmt"
+    "time"
+)
+
+func say(stuff string, time int) {
+    for i := 0; i < time; i++ {
+        fm.Println(stuff)
+        time.Sleep(10 * time.Millisecond)
+    }
+}
+
+func main() {
+    // go: start a new goroutine
+    go say("hello", 50)
+    go say("goodbye", 50)
+    // should join threads instead of sleep for 5 sec
+
+    // hold main thread
+    // when main thread ends: all other threads die immediately
+    // go: no concept of parent thread
+    time.Sleep(5 * time.Second)
+
+}
+
+
+spinning for progress:
+    1> combine spinning & calculating together (no generic)
+    2> could use thread
+
+golang: multi threads accessing shared map: runtime error
+python: daemon=True: this thread ends when one of thread ends?
+
+
+
+// racing condition
+type Counter struct {
+    V int
+}
+
+func (c *Counter) Inc() {
+    c.V += 1;
+    // three steps in assembly language (get, inc, store)
+    // => race condition
+    // => critical section: only one thread access
+}
+
+func (c *Counter) Get() int {
+    return c
+}
+
+func main() {
+    myC := Counter{}
+    fmt.Println(myC.Get())
+    for i := 0; i < 1000; i++ {
+        // 1000 threads trying to increment counter
+        // racing condition
+        go myC.Inc()
+    }
+    time.Sleep(time.Second)
+    fmt.Println(myC.Get())
+
+    // result: undterministic
+    // reason: increment is not atomic operation
+}
+
+
+=> resolve race condition:
+    e.g: Spin lock
+    type SpinLock struct {
+        Held bool
+    }
+    func (s *SpinLock) Lock() {
+        // busy wait
+        for s.Held() {}
+        /*
+            DANGER ZONE
+            if both threads finish the loop when one other thread finished
+        */
+        // once held becomes false
+        S.Held = true
+    }
+    func (s *SpinLock) UnLock() {
+        s.Held = false
+    }
+
+    e.g:
+    type Spinlock struct {
+        Who int
+        Interested []bool
+    }
+    func (s *Spinlock) Lock() {
+        s.Interested[Thread.this] = true
+        for s.Who != Thread.this && s.Interested[s.Who] {}
+        // race condition here (both threads can set s.Who = true)
+        s.Who = Thread.this
+    }
+    func (s *Spinlock) Unlock() {
+        s.Interested[Thread.this] = false
+    }
+
+    => without special primitive / external ..
+    => cannot write working spinlock
+
+    => suppose some atomic operation:
+    func testSet(flag *bool) bool {
+        bool old = *flag
+        *flag = true
+        return old
+    }
+
+    =>
+    type SpinLock struct {
+        Held bool
+    }
+    func (s *SpinLock) Lock() {
+        // whenever held is false: we can acquire the lock (without others interruption)
+        for testSet(s.Held) {}
+    }
+    func (s *SpinLock) UnLock() {
+        s.Held = false
+    }

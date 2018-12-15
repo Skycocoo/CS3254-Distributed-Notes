@@ -1,0 +1,86 @@
+package main
+
+// should not have imported packages not used
+import (
+    "fmt"
+    "os"
+    "bufio"
+)
+
+// fmt: standard io? (format)
+// os: open file
+// bufio: read file (buffer I/O)
+
+
+// (variable name) (type name)
+// return type: int
+func addone(n int) int {
+    return n + 1
+}
+
+// open file & read first line
+func readFirstLine(filename string) (string, error) {
+    // open a file
+    // return file handler
+    // if fail: return two things
+    f, err := os.Open(file)
+    // if success: err = nil (absence of value; like null)
+    if (err != nil) {
+        return "", err
+    }
+
+    // defer: do this just before the end of the scope
+    // python equivalent: context manager / try finally
+    defer f.Close()
+
+    scanner := bufio.NewScanner(f)
+    if (scanner.Scan()) {
+        return scanner.Text(), nil
+    } else {
+        return "", error.New("cannot scan for some reason")
+    }
+
+    // after return tho
+    // f.Close()
+}
+
+func main() {
+    // declare variable
+    var somenum int
+
+    // if inferred automatically: dont have to declare type
+    // := create new variable (not assignment)
+    somenum := 5
+
+    // rule:
+    // capital method: public to other packages
+    // lowercase: private to other packages
+    fmt.Println("hello world", somenum)
+
+    // loop:
+    for {
+        // infinite loop
+        fmt.Println("yo")
+    }
+
+    i := 20
+    for (i >= 0) {
+        fmt.Println(i)
+        i--;
+    }
+
+    // pre increment?
+    // no parentheses for for loop
+    for (i := 0; i < 20; i++) {
+        fmt.Println(i)
+    }
+
+    // for range
+    stuff := []string{"first", "second", "third"}
+    for _, i := range(stuff) {
+        // _: name for sth we dont care (for this case index)
+        fmt.Println(i)
+    }
+
+
+}
